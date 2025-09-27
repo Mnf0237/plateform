@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Filter, ChevronDown } from 'lucide-react';
+import { ListFilter as Filter, ChevronDown } from 'lucide-react';
 import { ProjectCategory, SortOption } from '../types';
 
 interface FilterBarProps {

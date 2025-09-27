@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, CheckCircle, Youtube, Instagram, Twitch, Globe } from 'lucide-react';
+import { Users, CircleCheck as CheckCircle, Youtube, Instagram, Twitch, Globe } from 'lucide-react';
 import { Creator } from '../types';
 
 interface CreatorSpotlightProps {
