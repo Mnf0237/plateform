@@ -26,8 +26,6 @@ function App() {
               <Route path="/explore" element={<ExplorePage />} />
             </Routes>
           </main>
-  );
-}
 
           {/* Footer */}
           <footer className="glass border-t border-white/10 mt-20">
@@ -79,6 +77,7 @@ function App() {
         </div>
       </Router>
     </AuthProvider>
-  )
+  );
 }
+
 export default App;
