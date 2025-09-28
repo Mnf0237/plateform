@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Settings, MapPin, Calendar, Link as LinkIcon, Edit3, Camera } from 'lucide-react';
+import { Settings, MapPin, Calendar, Link as LinkIcon, CreditCard as Edit3, Camera } from 'lucide-react';
 import ProjectCard from '../components/ProjectCard';
 import { mockProjects } from '../data/mockData';
 
