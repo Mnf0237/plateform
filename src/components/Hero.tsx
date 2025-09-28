@@ -1,7 +1,11 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { Sparkles, TrendingUp, Users } from 'lucide-react';
 
 const Hero: React.FC = () => {
+  const { isAuthenticated } = useAuth();
+
   return (
     <div className="relative overflow-hidden py-16 mb-12">
       {/* Background Elements */}
@@ -30,12 +34,18 @@ const Hero: React.FC = () => {
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4 mb-12">
-          <button className="btn-primary text-lg px-8 py-4">
+          <Link to="/explore" className="btn-primary text-lg px-8 py-4">
             Explorer les projets
-          </button>
-          <button className="btn-secondary text-lg px-8 py-4">
-            Devenir créateur
-          </button>
+          </Link>
+          {isAuthenticated ? (
+            <Link to="/create" className="btn-secondary text-lg px-8 py-4">
+              Publier un projet
+            </Link>
+          ) : (
+            <Link to="/register" className="btn-secondary text-lg px-8 py-4">
+              Devenir créateur
+            </Link>
+          )}
         </div>
 
         {/* Stats */}
