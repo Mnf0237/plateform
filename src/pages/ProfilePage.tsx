@@ -19,7 +19,11 @@ import {
   MessageCircle,
   TrendingUp,
   Download,
-  ExternalLink
+  ExternalLink,
+  Upload,
+  X,
+  Cloud,
+  Image as ImageIcon
 } from 'lucide-react';
 import ProjectCard from '../components/ProjectCard';
 import { mockProjects } from '../data/mockData';
@@ -29,6 +33,11 @@ const ProfilePage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'projects' | 'liked' | 'collections' | 'about'>('projects');
   const [isEditing, setIsEditing] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
+  const [showImageUpload, setShowImageUpload] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [showCoverUpload, setShowCoverUpload] = useState(false);
+  const [uploadedCover, setUploadedCover] = useState<string | null>(null);
 
   if (!user) {
     return (
@@ -62,19 +71,96 @@ const ProfilePage: React.FC = () => {
     { id: 'about', label: 'À propos', count: null }
   ];
 
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === 'dragenter' || e.type === 'dragover') {
+      setDragActive(true);
+    } else if (e.type === 'dragleave') {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleImageFile(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handleImageFile = (file: File) => {
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setUploadedImage(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCoverFile = (file: File) => {
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setUploadedCover(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const saveProfileImage = () => {
+    // Ici on sauvegarderait l'image sur le serveur
+    console.log('Sauvegarde de l\'image de profil');
+    setShowImageUpload(false);
+    setUploadedImage(null);
+  };
+
+  const saveCoverImage = () => {
+    // Ici on sauvegarderait l'image de couverture sur le serveur
+    console.log('Sauvegarde de l\'image de couverture');
+    setShowCoverUpload(false);
+    setUploadedCover(null);
+  };
+
   return (
     <div className="max-w-4xl mx-auto">
       {/* Profile Header */}
       <div className="glass-card mb-8">
         <div className="relative">
           {/* Cover Image */}
-          <div className="h-48 bg-gradient-to-r from-primary-500/20 via-secondary-500/20 to-primary-500/20 rounded-t-xl relative overflow-hidden">
+          <div 
+            className="h-48 bg-gradient-to-r from-primary-500/20 via-secondary-500/20 to-primary-500/20 rounded-t-xl relative overflow-hidden cursor-pointer group"
+            onClick={() => isEditing && setShowCoverUpload(true)}
+            style={uploadedCover ? { backgroundImage: `url(${uploadedCover})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
+          >
             {/* Decorative elements */}
-            <div className="absolute top-4 left-4 w-16 h-16 bg-white/10 rounded-full blur-xl"></div>
-            <div className="absolute bottom-4 right-8 w-24 h-24 bg-secondary-400/20 rounded-full blur-xl"></div>
+            {!uploadedCover && (
+              <>
+                <div className="absolute top-4 left-4 w-16 h-16 bg-white/10 rounded-full blur-xl"></div>
+                <div className="absolute bottom-4 right-8 w-24 h-24 bg-secondary-400/20 rounded-full blur-xl"></div>
+              </>
+            )}
             
             {isEditing && (
-              <button className="absolute top-4 right-4 p-2 glass rounded-lg hover:bg-white/20 transition-colors">
+              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <div className="text-center text-white">
+                  <Camera className="w-8 h-8 mx-auto mb-2" />
+                  <p className="text-sm">Changer la photo de couverture</p>
+                </div>
+              </div>
+            )}
+            
+            {isEditing && !uploadedCover && (
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowCoverUpload(true);
+                }}
+                className="absolute top-4 right-4 p-2 glass rounded-lg hover:bg-white/20 transition-colors"
+              >
                 <Camera className="w-5 h-5" />
               </button>
             )}
@@ -116,12 +202,15 @@ const ProfilePage: React.FC = () => {
               {/* Avatar */}
               <div className="relative">
                 <img
-                  src={user.avatar}
+                  src={uploadedImage || user.avatar}
                   alt={user.name}
                   className="w-40 h-40 rounded-full border-4 border-white/20 object-cover shadow-2xl"
                 />
                 {isEditing && (
-                  <button className="absolute bottom-2 right-2 p-3 bg-primary-500 rounded-full hover:bg-primary-600 transition-colors shadow-lg">
+                  <button 
+                    onClick={() => setShowImageUpload(true)}
+                    className="absolute bottom-2 right-2 p-3 bg-primary-500 rounded-full hover:bg-primary-600 transition-colors shadow-lg"
+                  >
                     <Camera className="w-5 h-5 text-white" />
                   </button>
                 )}
@@ -481,6 +570,225 @@ const ProfilePage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Image Upload Modal */}
+      {showImageUpload && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="glass-card max-w-md w-full">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-white">Changer la photo de profil</h3>
+              <button
+                onClick={() => {
+                  setShowImageUpload(false);
+                  setUploadedImage(null);
+                }}
+                className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Upload Area */}
+            <div
+              className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 mb-6 ${
+                dragActive
+                  ? 'border-primary-400 bg-primary-400/10'
+                  : 'border-white/20 hover:border-white/40'
+              }`}
+              onDragEnter={handleDrag}
+              onDragLeave={handleDrag}
+              onDragOver={handleDrag}
+              onDrop={handleDrop}
+            >
+              {uploadedImage ? (
+                <div className="relative">
+                  <img
+                    src={uploadedImage}
+                    alt="Preview"
+                    className="w-32 h-32 mx-auto rounded-full object-cover border-4 border-white/20"
+                  />
+                  <button
+                    onClick={() => setUploadedImage(null)}
+                    className="absolute top-0 right-1/2 translate-x-16 p-2 bg-red-500 rounded-full hover:bg-red-600 transition-colors"
+                  >
+                    <X className="w-4 h-4 text-white" />
+                  </button>
+                </div>
+              ) : (
+                <div>
+                  <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-white font-medium mb-2">
+                    Glissez-déposez votre image ici
+                  </p>
+                  <p className="text-gray-400 text-sm mb-4">
+                    ou choisissez depuis votre appareil
+                  </p>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => e.target.files?.[0] && handleImageFile(e.target.files[0])}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Upload Options */}
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <button className="flex items-center justify-center space-x-2 p-4 glass rounded-lg hover:bg-white/20 transition-colors">
+                <Upload className="w-5 h-5" />
+                <span>Fichier local</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => e.target.files?.[0] && handleImageFile(e.target.files[0])}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+              </button>
+              
+              <button className="flex items-center justify-center space-x-2 p-4 glass rounded-lg hover:bg-white/20 transition-colors">
+                <Cloud className="w-5 h-5" />
+                <span>Cloud</span>
+              </button>
+            </div>
+
+            {/* Suggestions */}
+            <div className="mb-6">
+              <p className="text-sm text-gray-400 mb-3">Ou choisissez parmi ces suggestions :</p>
+              <div className="grid grid-cols-4 gap-2">
+                {[
+                  'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150',
+                  'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=150',
+                  'https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=150',
+                  'https://images.pexels.com/photos/1130626/pexels-photo-1130626.jpeg?auto=compress&cs=tinysrgb&w=150'
+                ].map((src, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setUploadedImage(src)}
+                    className="aspect-square rounded-lg overflow-hidden hover:ring-2 hover:ring-primary-400 transition-all"
+                  >
+                    <img src={src} alt="" className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex space-x-3">
+              <button
+                onClick={() => {
+                  setShowImageUpload(false);
+                  setUploadedImage(null);
+                }}
+                className="flex-1 btn-secondary"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={saveProfileImage}
+                disabled={!uploadedImage}
+                className="flex-1 btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Sauvegarder
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cover Upload Modal */}
+      {showCoverUpload && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="glass-card max-w-lg w-full">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-white">Changer la photo de couverture</h3>
+              <button
+                onClick={() => {
+                  setShowCoverUpload(false);
+                  setUploadedCover(null);
+                }}
+                className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Upload Area */}
+            <div className="relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 mb-6 border-white/20 hover:border-white/40">
+              {uploadedCover ? (
+                <div className="relative">
+                  <img
+                    src={uploadedCover}
+                    alt="Preview"
+                    className="w-full h-32 mx-auto rounded-lg object-cover"
+                  />
+                  <button
+                    onClick={() => setUploadedCover(null)}
+                    className="absolute top-2 right-2 p-2 bg-red-500 rounded-full hover:bg-red-600 transition-colors"
+                  >
+                    <X className="w-4 h-4 text-white" />
+                  </button>
+                </div>
+              ) : (
+                <div>
+                  <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-white font-medium mb-2">
+                    Glissez-déposez votre image de couverture
+                  </p>
+                  <p className="text-gray-400 text-sm mb-4">
+                    Recommandé: 1200x300px
+                  </p>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => e.target.files?.[0] && handleCoverFile(e.target.files[0])}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Upload Options */}
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <button className="flex items-center justify-center space-x-2 p-4 glass rounded-lg hover:bg-white/20 transition-colors">
+                <Upload className="w-5 h-5" />
+                <span>Fichier local</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => e.target.files?.[0] && handleCoverFile(e.target.files[0])}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+              </button>
+              
+              <button className="flex items-center justify-center space-x-2 p-4 glass rounded-lg hover:bg-white/20 transition-colors">
+                <Cloud className="w-5 h-5" />
+                <span>Cloud</span>
+              </button>
+            </div>
+
+            {/* Actions */}
+            <div className="flex space-x-3">
+              <button
+                onClick={() => {
+                  setShowCoverUpload(false);
+                  setUploadedCover(null);
+                }}
+                className="flex-1 btn-secondary"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={saveCoverImage}
+                disabled={!uploadedCover}
+                className="flex-1 btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Sauvegarder
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
