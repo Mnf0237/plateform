@@ -1,30 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { 
-  Settings, 
-  MapPin, 
-  Calendar, 
-  Link as LinkIcon, 
-  Edit3, 
-  Camera, 
-  Plus,
-  Share2,
-  MoreHorizontal,
-  Award,
-  Star,
-  Users,
-  Eye,
-  Heart,
-  MessageCircle,
-  TrendingUp,
-  Download,
-  ExternalLink,
-  Upload,
-  X,
-  Cloud,
-  Image as ImageIcon
-} from 'lucide-react';
+import { Settings, MapPin, Calendar, Link as LinkIcon, CreditCard as Edit3, Camera, Plus, Share2, MoveHorizontal as MoreHorizontal, Award, Star, Users, Eye, Heart, MessageCircle, TrendingUp, Download, ExternalLink, Upload, X, Cloud, Image as ImageIcon } from 'lucide-react';
 import ProjectCard from '../components/ProjectCard';
 import { mockProjects } from '../data/mockData';
 
